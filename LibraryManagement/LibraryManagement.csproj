@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-LibraryManagement-d6c79f69-c22a-4bee-b1d4-39840ed92574</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Data\Migrations\20241116141316_fixedNamingMistake.cs" />
+    <Compile Remove="Data\Migrations\20241116141316_fixedNamingMistake.Designer.cs" />
+    <Compile Remove="Data\Migrations\20241116142530_newmMig.cs" />
+    <Compile Remove="Data\Migrations\20241116142530_newmMig.Designer.cs" />
+    <Compile Remove="Data\Migrations\20241116143852_newMigration.cs" />
+    <Compile Remove="Data\Migrations\20241116143852_newMigration.Designer.cs" />
+    <Compile Remove="Data\Migrations\20241116144734_asd.cs" />
+    <Compile Remove="Data\Migrations\20241116144734_asd.Designer.cs" />
+    <Compile Remove="Data\Migrations\20241116145309_asdasd.cs" />
+    <Compile Remove="Data\Migrations\20241116145309_asdasd.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.22" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.22" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.22" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.35" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.35" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.35">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.18" />
+  </ItemGroup>
+
+</Project>
