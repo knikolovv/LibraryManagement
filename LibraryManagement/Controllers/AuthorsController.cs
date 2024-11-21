@@ -20,11 +20,48 @@ namespace LibraryManagement.Controllers
         }
 
         // GET: Authors
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder, string searchString,string currentFilter,int? pageNumber)
         {
-              return _context.Authors != null ? 
-                          View(await _context.Authors.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.Authors'  is null.");
+
+            ViewData["FirstNameSortParam"] = string.IsNullOrEmpty(sortOrder) ? "firstName_desc" : "";
+            ViewData["LastNameSortParam"] = string.IsNullOrEmpty(sortOrder) ? "lastName_desc" : "";
+            ViewData["CurrentSort"] = sortOrder;
+
+            var authors = from a in _context.Authors select a;
+
+            if(searchString != null)
+            {
+                pageNumber = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
+
+            ViewData["CurrentFilter"] = searchString; 
+
+            if (!string.IsNullOrEmpty(searchString)) 
+            {
+                authors = authors.Where(a => a.FirstName.Contains(searchString) || a.LastName.Contains(searchString));
+            }
+
+            
+            switch (sortOrder)
+            {
+                case "firstName_desc":
+                    authors = authors.OrderByDescending(a => a.FirstName);
+                    break;
+                case "lastName_desc":
+                    authors = authors.OrderByDescending(a => a.LastName);
+                    break;
+                default:
+                    authors = authors.OrderBy(a => a.FirstName);
+                    break;
+            }
+
+            int pageSize = 3;
+
+            return View(await PaginatedList<Author>.CreateAsync(authors.AsNoTracking(),pageNumber ?? 1, pageSize));
         }
 
         // GET: Authors/Details/5
