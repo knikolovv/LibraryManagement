@@ -34,9 +34,13 @@
                 <span asp-validation-for="MembershipDate" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="BooksBorrowed" class="control-label"></label>
-                <input asp-for="BooksBorrowed" class="form-control" />
-                <span asp-validation-for="BooksBorrowed" class="text-danger"></span>
+                <label asp-for="NumberOfBoughtBooks" class="control-label"></label>
+                <input asp-for="NumberOfBoughtBooks" class="form-control" />
+                <span asp-validation-for="NumberOfBoughtBooks" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MostRecentTakenBookId" class="control-label"></label>
+                <select asp-for="MostRecentTakenBookId" class="form-control" asp-items="ViewBag.Books"></select>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

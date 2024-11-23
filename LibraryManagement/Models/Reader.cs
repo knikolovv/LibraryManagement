@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 
 namespace LibraryManagement.Models
 {
@@ -25,7 +26,13 @@ namespace LibraryManagement.Models
         [Display(Name = "Membership date until")]
         public DateTime MembershipDate { get; set; }
 
-        [Display(Name = "Number of books borrowed")]
-        public long? BooksBorrowed { get; set; }
+        [Display(Name = "Number of bought books")]
+        public long? NumberOfBoughtBooks { get; set; }
+
+        [Display(Name = "Most recent borrowed book")]
+        public int? MostRecentTakenBookId { get; set; }
+        [ValidateNever]
+        [Display(Name = "Most recent borrowed book")]
+        public virtual Book MostRecentTakenBook { get; set; }
     }
 }

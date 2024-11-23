@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using LibraryManagement.Data;
+﻿using LibraryManagement.Data;
 using LibraryManagement.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Controllers
 {
@@ -20,16 +15,16 @@ namespace LibraryManagement.Controllers
         }
 
         // GET: Authors
-        public async Task<IActionResult> Index(string sortOrder, string searchString,string currentFilter,int? pageNumber)
+        public async Task<IActionResult> Index(string sortOrder, string searchString, string currentFilter, int? pageNumber)
         {
 
-            ViewData["FirstNameSortParam"] = string.IsNullOrEmpty(sortOrder) ? "firstName_desc" : "";
-            ViewData["LastNameSortParam"] = string.IsNullOrEmpty(sortOrder) ? "lastName_desc" : "";
+            ViewData["FirstNameSortParam"] = sortOrder == "firstName_asc" ? "firstName_desc" : "firstName_asc";
+            ViewData["LastNameSortParam"] = sortOrder == "lastName_asc" ? "lastName_desc" : "lastName_asc";
             ViewData["CurrentSort"] = sortOrder;
 
             var authors = from a in _context.Authors select a;
 
-            if(searchString != null)
+            if (searchString != null)
             {
                 pageNumber = 1;
             }
@@ -38,14 +33,14 @@ namespace LibraryManagement.Controllers
                 searchString = currentFilter;
             }
 
-            ViewData["CurrentFilter"] = searchString; 
+            ViewData["CurrentFilter"] = searchString;
 
-            if (!string.IsNullOrEmpty(searchString)) 
+            if (!string.IsNullOrEmpty(searchString))
             {
                 authors = authors.Where(a => a.FirstName.Contains(searchString) || a.LastName.Contains(searchString));
             }
 
-            
+
             switch (sortOrder)
             {
                 case "firstName_desc":
@@ -54,14 +49,19 @@ namespace LibraryManagement.Controllers
                 case "lastName_desc":
                     authors = authors.OrderByDescending(a => a.LastName);
                     break;
-                default:
+                case "lastName_asc":
+                    authors = authors.OrderBy(a => a.LastName);
+                    break;
+                case "firstName_asc":
                     authors = authors.OrderBy(a => a.FirstName);
+                    break;
+                default:
                     break;
             }
 
             int pageSize = 3;
 
-            return View(await PaginatedList<Author>.CreateAsync(authors.AsNoTracking(),pageNumber ?? 1, pageSize));
+            return View(await PaginatedList<Author>.CreateAsync(authors.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
         // GET: Authors/Details/5
@@ -96,7 +96,7 @@ namespace LibraryManagement.Controllers
         public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,DateOfBirth,Nationality,NumberOfBooks")] Author author)
         {
 
-            
+
 
             if (ModelState.IsValid)
             {
@@ -190,14 +190,14 @@ namespace LibraryManagement.Controllers
             {
                 _context.Authors.Remove(author);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool AuthorExists(int id)
         {
-          return (_context.Authors?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Authors?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

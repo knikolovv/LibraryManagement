@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using LibraryManagement.Data;
+using LibraryManagement.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using LibraryManagement.Data;
-using LibraryManagement.Models;
 
 namespace LibraryManagement.Controllers
 {
@@ -20,11 +16,55 @@ namespace LibraryManagement.Controllers
         }
 
         // GET: Readers
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder, string searchString, string currentFilter, int? pageNumber)
         {
-              return _context.Readers != null ? 
-                          View(await _context.Readers.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.Readers'  is null.");
+
+            ViewData["FullNameSortParam"] = sortOrder == "fullName_asc" ? "fullName_desc" : "fullName_asc";
+            ViewData["EmailSortParam"] = sortOrder == "email_asc" ? "email_desc" : "email_asc";
+            ViewData["CurrentSort"] = sortOrder;
+
+
+            var readers = from r in _context.Readers.Include(r => r.MostRecentTakenBook) select r;
+
+            if (searchString != null)
+            {
+                pageNumber = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
+
+            ViewData["CurrentFilter"] = searchString;
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                readers = readers.Where(r => r.FullName.Contains(searchString) ||
+                r.Email.Contains(searchString));
+            }
+
+
+            switch (sortOrder)
+            {
+                case "fullName_desc":
+                    readers = readers.OrderByDescending(r => r.FullName);
+                    break;
+                case "email_desc":
+                    readers = readers.OrderByDescending(r => r.Email);
+                    break;
+                case "email_asc":
+                    readers = readers.OrderBy(r => r.Email);
+                    break;
+                case "fullName_asc":
+                    readers = readers.OrderBy(r => r.FullName);
+                    break;
+                default:
+                    break;
+            }
+
+            int pageSize = 3;
+
+            return View(await PaginatedList<Reader>.CreateAsync(readers.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
         // GET: Readers/Details/5
@@ -36,6 +76,7 @@ namespace LibraryManagement.Controllers
             }
 
             var reader = await _context.Readers
+                .Include(r => r.MostRecentTakenBook)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (reader == null)
             {
@@ -48,6 +89,7 @@ namespace LibraryManagement.Controllers
         // GET: Readers/Create
         public IActionResult Create()
         {
+            ViewBag.Books = new SelectList(_context.Books, "Id", "Title");
             return View();
         }
 
@@ -56,7 +98,7 @@ namespace LibraryManagement.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FullName,Email,DateOfBirth,MembershipDate,BooksBorrowed")] Reader reader)
+        public async Task<IActionResult> Create([Bind("Id,FullName,Email,DateOfBirth,MembershipDate,NumberOfBoughtBooks,MostRecentTakenBookId")] Reader reader)
         {
             if (ModelState.IsValid)
             {
@@ -64,6 +106,7 @@ namespace LibraryManagement.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewBag.Books = new SelectList(_context.Books, "Id", "Title", reader.MostRecentTakenBookId);
             return View(reader);
         }
 
@@ -80,6 +123,7 @@ namespace LibraryManagement.Controllers
             {
                 return NotFound();
             }
+            ViewBag.Books = new SelectList(_context.Books, "Id", "Title");
             return View(reader);
         }
 
@@ -88,7 +132,7 @@ namespace LibraryManagement.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Email,DateOfBirth,MembershipDate,BooksBorrowed")] Reader reader)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Email,DateOfBirth,MembershipDate,NumberOfBoughtBooks,MostRecentTakenBookId")] Reader reader)
         {
             if (id != reader.Id)
             {
@@ -115,6 +159,7 @@ namespace LibraryManagement.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewBag.Books = new SelectList(_context.Books, "Id", "Title", reader.MostRecentTakenBookId);
             return View(reader);
         }
 
@@ -127,6 +172,7 @@ namespace LibraryManagement.Controllers
             }
 
             var reader = await _context.Readers
+                .Include(r => r.MostRecentTakenBook)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (reader == null)
             {
@@ -150,14 +196,14 @@ namespace LibraryManagement.Controllers
             {
                 _context.Readers.Remove(reader);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ReaderExists(int id)
         {
-          return (_context.Readers?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Readers?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

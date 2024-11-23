@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LibraryManagement.Models
 {
@@ -27,6 +28,7 @@ namespace LibraryManagement.Models
         [Display(Name = "Number of published books")]
         public int? NumberOfBooks { get; set; }
 
+        [NotMapped]
         public string FullName
         {
             get { return $"{FirstName} {LastName}"; }

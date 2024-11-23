@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using LibraryManagement.Data;
+using LibraryManagement.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using LibraryManagement.Data;
-using LibraryManagement.Models;
-using Humanizer.Localisation;
 
 namespace LibraryManagement.Controllers
 {
@@ -21,10 +16,55 @@ namespace LibraryManagement.Controllers
         }
 
         // GET: Books
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder, string searchString, string currentFilter, int? pageNumber)
         {
-            var applicationDbContext = _context.Books.Include(b => b.Author);
-            return View(await applicationDbContext.ToListAsync());
+
+            ViewData["TitleSortParam"] = sortOrder == "title_asc" ? "title_desc" : "title_asc";
+            ViewData["PriceSortParam"] = sortOrder == "price_asc" ? "price_desc" : "price_asc";
+            ViewData["CurrentSort"] = sortOrder;
+
+            var books = from b in _context.Books.Include(b => b.Author) select b;
+
+            if (searchString != null)
+            {
+                pageNumber = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
+
+            ViewData["CurrentFilter"] = searchString;
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                books = books.Where(b => b.Title.Contains(searchString) ||
+                b.Author.FirstName.Contains(searchString) ||
+                b.Author.LastName.Contains(searchString));
+            }
+
+
+            switch (sortOrder)
+            {
+                case "title_desc":
+                    books = books.OrderByDescending(b => b.Title);
+                    break;
+                case "price_desc":
+                    books = books.OrderByDescending(b => b.Author.FirstName).ThenByDescending(b => b.Author.LastName);
+                    break;
+                case "price_asc":
+                    books = books.OrderBy(b => b.Author.FirstName).ThenBy(b => b.Author.LastName);
+                    break;
+                case "title_asc":
+                    books = books.OrderBy(b => b.Title);
+                    break;
+                default:
+                    break;
+            }
+
+            int pageSize = 3;
+
+            return View(await PaginatedList<Book>.CreateAsync(books.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
         // GET: Books/Details/5
@@ -49,7 +89,7 @@ namespace LibraryManagement.Controllers
         // GET: Books/Create
         public IActionResult Create()
         {
-            
+
             ViewBag.Authors = new SelectList(_context.Authors, "Id", "FullName");
             return View();
         }
@@ -63,15 +103,7 @@ namespace LibraryManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Genre,PublishDate,AuthorId,Price")] Book book)
         {
-            
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values.SelectMany(v => v.Errors);
-                foreach (var error in errors)
-                {
-                    Console.WriteLine(error.ErrorMessage);
-                }
-            }
+
 
             if (ModelState.IsValid)
             {
@@ -171,14 +203,14 @@ namespace LibraryManagement.Controllers
             {
                 _context.Books.Remove(book);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool BookExists(int id)
         {
-          return (_context.Books?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Books?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

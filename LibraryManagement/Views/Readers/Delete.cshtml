@@ -36,10 +36,16 @@
             @Html.DisplayFor(model => model.MembershipDate)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.BooksBorrowed)
+            @Html.DisplayNameFor(model => model.NumberOfBoughtBooks)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.BooksBorrowed)
+            @Html.DisplayFor(model => model.NumberOfBoughtBooks)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.MostRecentTakenBook)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.MostRecentTakenBook.Title)
         </dd>
     </dl>
     

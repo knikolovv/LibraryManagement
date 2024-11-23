@@ -1,4 +1,4 @@
-﻿@model IEnumerable<LibraryManagement.Models.Reader>
+﻿@model PaginatedList<LibraryManagement.Models.Reader>
 
 @{
     ViewData["Title"] = "Index";
@@ -9,23 +9,38 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
+<form asp-action="Index" method="get">
+    <div class="form-actions no-color">
+        <p>
+            <input type="text" name="SearchString" placeholder="Search" value="@ViewData["CurrentFilter"]" />
+            <input type="submit" value="Search" class="btn btn-primary" /> |
+            <a asp-action="Index">Back to Full List</a>
+        </p>
+    </div>
+</form>
+
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.FullName)
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["FullNameSortParam"]" asp-route-currentFillter="@ViewData["CurrentFilter"]">Full name</a>
+
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Email)
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["EmailSortParam"]" asp-route-currentFillter="@ViewData["CurrentFilter"]">Email</a>                
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.DateOfBirth)
+                Date of birth
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.MembershipDate)
+                Membership date until
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.BooksBorrowed)
+                Number of bought books               
+            </th>
+            <th>
+                Most recent borrowed book
             </th>
             <th></th>
         </tr>
@@ -46,7 +61,10 @@
                 @Html.DisplayFor(modelItem => item.MembershipDate)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.BooksBorrowed)
+                @Html.DisplayFor(modelItem => item.NumberOfBoughtBooks)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MostRecentTakenBook.Title)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
@@ -57,3 +75,25 @@
 }
     </tbody>
 </table>
+
+@{
+    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+}
+
+<a asp-action="Index"
+   asp-route-sortOrder="@ViewData["CurrentSort"]"
+   asp-route-pageNumber="@(Model.PageIndex - 1)"
+   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+   class="btn btn-default @prevDisabled">
+    Previous
+</a>
+
+<a asp-action="Index"
+   asp-route-sortOrder="@ViewData["CurrentSort"]"
+   asp-route-pageNumber="@(Model.PageIndex + 1)"
+   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+   class="btn btn-default @nextDisabled">
+    Next
+</a>
+
